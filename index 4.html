@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sri Lanka & Maldives Itinerary</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    #map {
+      height: 400px;
+    }
+    .itinerary {
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    .entry {
+      margin-bottom: 0.75rem;
+      border-left: 4px solid #4CAF50;
+      padding-left: 1rem;
+    }
+    .entry h3 {
+      margin: 0 0 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="padding: 1rem;">My Trip: Sri Lanka & Maldives</h2>
+  <div id="map"></div>
+  <div class="itinerary" id="itinerary-list"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const itinerary = [{"location": "Sigiriya", "country": "Sri Lanka", "start": "2025-12-04", "end": "2025-12-06", "hotel": null}, {"location": "Kandy", "country": "Sri Lanka", "start": "2025-12-06", "end": "2025-12-07", "hotel": "Rivora"}, {"location": "Ella", "country": "Sri Lanka", "start": "2025-12-07", "end": "2025-12-09", "hotel": "Ravana"}, {"location": "Yala", "country": "Sri Lanka", "start": "2025-12-09", "end": "2025-12-11", "hotel": "Hilton Yala Resort"}, {"location": "Mirissa", "country": "Sri Lanka", "start": "2025-12-11", "end": "2025-12-13", "hotel": null}, {"location": "Galle", "country": "Sri Lanka", "start": "2025-12-13", "end": "2025-12-14", "hotel": null}, {"location": "Colombo", "country": "Sri Lanka", "start": "2025-12-14", "end": "2025-12-15", "hotel": null}, {"location": "Maldives", "country": "Maldives", "start": "2025-12-15", "end": "2025-12-18", "hotel": "Sheraton Maldives Full Moon"}];
+
+    const map = L.map('map').setView([7.8731, 80.7718], 7);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    const geocode = async (place) => {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
+      const data = await res.json();
+      return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+    };
+
+    const render = async () => {
+      const container = document.getElementById("itinerary-list");
+      for (const stop of itinerary) {
+        const hotelText = stop.hotel ? `Hotel: ${stop.hotel}` : "No hotel listed";
+
+        const entry = document.createElement("div");
+        entry.className = "entry";
+        entry.innerHTML = `<h3>${stop.location}</h3><p>${stop.start} → ${stop.end} ({stop.country})<br><em>${hotelText}</em></p>`;
+        container.appendChild(entry);
+
+        const coords = await geocode(`${stop.location}, ${stop.country}`);
+        if (coords) {
+          const popup = `<b>${stop.location}</b><br>${stop.start}–${stop.end}<br><em>${hotelText}</em>`;
+          L.marker(coords).addTo(map).bindPopup(popup);
+        }
+      }
+    };
+
+    render();
+  </script>
+</body>
+</html>
