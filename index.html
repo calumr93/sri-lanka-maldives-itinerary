@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sri Lanka & Maldives Itinerary</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    #map {
+      height: 400px;
+    }
+    .itinerary {
+      padding: 1rem;
+      background: #f9f9f9;
+    }
+    .entry {
+      margin-bottom: 0.75rem;
+      border-left: 4px solid #4CAF50;
+      padding-left: 1rem;
+    }
+    .entry h3 {
+      margin: 0 0 0.25rem 0;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="padding: 1rem;">My Trip: Sri Lanka & Maldives</h2>
+  <div id="map"></div>
+  <div class="itinerary" id="itinerary-list"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    const itinerary = [
+      { location: "Colombo", country: "Sri Lanka", start: "04 Dec", end: "04 Dec" },
+      { location: "Sigiriya", country: "Sri Lanka", start: "04 Dec", end: "06 Dec" },
+      { location: "Kandy (Rivora)", country: "Sri Lanka", start: "06 Dec", end: "07 Dec" },
+      { location: "Ella (via Nanu Oya train)", country: "Sri Lanka", start: "07 Dec", end: "09 Dec" },
+      { location: "Yala", country: "Sri Lanka", start: "09 Dec", end: "11 Dec" },
+      { location: "Mirissa", country: "Sri Lanka", start: "11 Dec", end: "13 Dec" },
+      { location: "Galle", country: "Sri Lanka", start: "13 Dec", end: "14 Dec" },
+      { location: "Colombo", country: "Sri Lanka", start: "14 Dec", end: "15 Dec" },
+      { location: "Maldives Hotel", country: "Maldives", start: "15 Dec", end: "18 Dec" }
+    ];
+
+    // Initialize map
+    const map = L.map('map').setView([7.8731, 80.7718], 7); // Center on Sri Lanka
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    // Use Nominatim for geocoding
+    const geocode = async (place) => {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place)}`);
+      const data = await res.json();
+      return data[0] ? [parseFloat(data[0].lat), parseFloat(data[0].lon)] : null;
+    };
+
+    // Render itinerary and map markers
+    const render = async () => {
+      const container = document.getElementById("itinerary-list");
+      for (const stop of itinerary) {
+        // Add to itinerary list
+        const entry = document.createElement("div");
+        entry.className = "entry";
+        entry.innerHTML = `<h3>${stop.location}</h3><p>${stop.start} → ${stop.end} (${stop.country})</p>`;
+        container.appendChild(entry);
+
+        // Add marker to map
+        const coords = await geocode(`${stop.location}, ${stop.country}`);
+        if (coords) {
+          L.marker(coords).addTo(map).bindPopup(`<b>${stop.location}</b><br>${stop.start}–${stop.end}`);
+        }
+      }
+    };
+
+    render();
+  </script>
+</body>
+</html>
